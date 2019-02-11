@@ -10,22 +10,26 @@ from DataPreProcessing import exclude_inf, standardizing, load_data
 
 LR = 0.001
 LAYERS = 50
+CELL_SIZE = 50
 EPOCHS = 100
 BATCH_SIZE = 5
 
 
 if __name__ == '__main__':
-    file_path = './Dataset/3class/data1.csv'
+    file_path = '../Dataset/2class/data1.csv'
     data = pd.read_csv(file_path)
+
+    # exclude inf value from DataFrame
     data = exclude_inf(data)
 
+    # Standardizing
     label = 'marker'
     data, class_number = standardizing(data, label)
-    # display 5 rows
+
+    # Drop NaN value
     data.dropna(inplace=True, axis=1)
 
-    # Break into X (predictors) & y (prediction)
-
+    # Transform data frame to training data format
     (x_train, y_train), (x_test, y_test) = load_data(data, label)
 
     # print("x_train.shape={}".format(x_train.shape))
@@ -36,10 +40,12 @@ if __name__ == '__main__':
     model.add(SimpleRNN(units=50, input_shape=(1, x_train.shape[2])))
 
     model.add(Dense(units=class_number, kernel_initializer='normal', activation='softmax'))
-    # 編譯: 選擇損失函數、優化方法及成效衡量方式
 
     adam = Adam(LR)
 
+    # Loss function: Cross Entropy
+    # Optimizer: Adam
+    # Metrics: Accuracy
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
 
     monitor = EarlyStopping(monitor='val_loss', min_delta=1e-3, patience=5, verbose=1, mode='auto')
@@ -54,11 +60,13 @@ if __name__ == '__main__':
     pred = np.argmax(pred, axis=1)
     y_eval = np.argmax(y_test, axis=1)
     accuracy = metrics.accuracy_score(y_eval, pred)
-
-    precision, recall, f_score, _ = metrics.precision_recall_fscore_support(y_eval, pred, average='macro')
-
     print("Accuracy: {0:.2f}%".format(accuracy * 100))
-    print("Precision: {0:.2f}%".format(precision * 100))
-    print("Recall: {0:.2f}%".format(recall * 100))
-    print("F-Measure: {}".format(f_score))
 
+    precision = metrics.precision_score(y_eval, pred)
+    print("Precision: {0:.2f}%".format(precision * 100))
+
+    recall = metrics.recall_score(y_eval, pred)
+    print("Recall: {0:.2f}%".format(recall * 100))
+
+    f_measure = metrics.f1_score(y_eval, pred)
+    print("F-Measure: {}".format(f_measure))

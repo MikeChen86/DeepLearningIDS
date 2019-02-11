@@ -5,18 +5,33 @@ from sklearn.model_selection import train_test_split
 
 
 def exclude_inf(data_frame):
+    """
+    Exclude inf value from dataset
+    :param data_frame: Dataset
+    :return: Dataset without inf value
+    """
     return data_frame[~data_frame.isin([np.nan, np.inf, -np.inf]).any(1)]
 
 
-# Encode text values to indexes(i.e. [1],[2],[3] for red,green,blue).
 def encode_text_index(data_frame, name):
+    """
+    Encode text values to indexes(i.e. [1],[2],[3] for red,green,blue).
+    :param data_frame: Dataset
+    :param name: Header name of label
+    :return: Number of classes
+    """
     le = preprocessing.LabelEncoder()
     data_frame[name] = le.fit_transform(data_frame[name])
     return le.classes_
 
 
-# Convert a Pandas dataframe to the x,y inputs that TensorFlow needs
 def to_xy(data_frame, target):
+    """
+    Convert a Pandas dataframe to the x,y inputs that TensorFlow needs
+    :param data_frame: Dataset
+    :param target: Header name of label
+    :return: Training data and labels
+    """
     result = []
     for x in data_frame.columns:
         if x != target:
@@ -34,8 +49,14 @@ def to_xy(data_frame, target):
         return data_frame.as_matrix(result).astype(np.float32), data_frame.as_matrix([target]).astype(np.float32)
 
 
-# Encode a numeric column as zscores
 def encode_numeric_zscore(data_frame, name, mean=None, sd=None):
+    """
+    Encode a numeric column as z-scores
+    :param data_frame: Dataset
+    :param name: Header name of column
+    :param mean: Mean of column data
+    :param sd: Standard Deviation of column data
+    """
     if mean is None:
         mean = data_frame[name].mean()
 
@@ -46,6 +67,12 @@ def encode_numeric_zscore(data_frame, name, mean=None, sd=None):
 
 
 def standardizing(data_frame, label_name):
+    """
+    Standardizing
+    :param data_frame: Dataset
+    :param label_name: Header name of label
+    :return: Dataset after Standardizing, number of classes
+    """
     class_ = None
     for each in data_frame.keys():
         if each == label_name:
