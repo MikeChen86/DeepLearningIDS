@@ -10,20 +10,22 @@ from DataPreProcessing import exclude_inf, standardizing, load_data
 
 LR = 0.001
 LAYERS = 50
-CELL_SIZE = 50
 EPOCHS = 100
 BATCH_SIZE = 5
 
 
 if __name__ == '__main__':
-    file_path = './Dataset/2class/data.csv'
+    file_path = './Dataset/multiclass/data2.csv'
     data = pd.read_csv(file_path)
     data = exclude_inf(data)
+    print(data[:5])
 
     label = 'marker'
     data, class_number = standardizing(data, label)
-
+    # display 5 rows
     data.dropna(inplace=True, axis=1)
+
+    # Break into X (predictors) & y (prediction)
 
     (x_train, y_train), (x_test, y_test) = load_data(data, label)
 
@@ -35,12 +37,10 @@ if __name__ == '__main__':
     model.add(SimpleRNN(units=50, input_shape=(1, x_train.shape[2])))
 
     model.add(Dense(units=class_number, kernel_initializer='normal', activation='softmax'))
+    # 編譯: 選擇損失函數、優化方法及成效衡量方式
 
     adam = Adam(LR)
 
-    # Loss function: Cross Entropy
-    # Optimizer: Adam
-    # Metrics: Accuracy
     model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
 
     monitor = EarlyStopping(monitor='val_loss', min_delta=1e-3, patience=5, verbose=1, mode='auto')
@@ -54,14 +54,12 @@ if __name__ == '__main__':
     pred = model.predict(x_test)
     pred = np.argmax(pred, axis=1)
     y_eval = np.argmax(y_test, axis=1)
-    auc_score = metrics.accuracy_score(y_eval, pred)
-    print("Accuracy: {}".format(auc_score * 100))
+    accuracy = metrics.accuracy_score(y_eval, pred)
 
-    reca_score = metrics.recall_score(y_eval, pred)  # 召回率=真實值為True的情況下預測值仍為True所佔的比例
-    print("Recall: {}".format(reca_score * 100))
+    precision, recall, f_score, _ = metrics.precision_recall_fscore_support(y_eval, pred, average='macro')
 
-    prec_score = metrics.precision_score(y_eval, pred)  # 精確率=預測值為True情況下真實值仍為True所佔的比例
-    print("Precision: {}".format(prec_score * 100))
+    print("Accuracy: {0:.2f}%".format(accuracy * 100))
+    print("Precision: {0:.2f}%".format(precision * 100))
+    print("Recall: {0:.2f}%".format(recall * 100))
+    print("F-Measure: {}".format(f_score))
 
-    f1_score = metrics.f1_score(y_eval, pred)  # 評估模型穩健程度,越大越好
-    print("F-Measure: {}".format(f1_score))
