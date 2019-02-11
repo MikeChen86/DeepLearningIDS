@@ -3,7 +3,7 @@ import numpy as np
 from sklearn import metrics
 from keras.models import Sequential
 from keras.layers.core import Dense
-from keras.layers.recurrent import LSTM
+from keras.layers.recurrent import GRU
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from DataPreProcessing import exclude_inf, standardizing, load_data
@@ -18,7 +18,7 @@ OPTIMIZER = Adam(LR)
 LOSS_FUNCTION = 'categorical_crossentropy'
 
 if __name__ == '__main__':
-    file_path = '../Dataset/3class/data2.csv'
+    file_path = '../Dataset/multiclass/data2.csv'
     data = pd.read_csv(file_path)
 
     # Exclude inf Value From DataFrame
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     model = Sequential()
 
     # Using LSTM
-    model.add(LSTM(units=50, input_shape=(1, x_train.shape[2])))
+    model.add(GRU(units=50, input_shape=(1, x_train.shape[2])))
 
     # Add Output Layer, use Softmax
     model.add(Dense(units=class_number, kernel_initializer='normal', activation='softmax'))
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     precision, recall, f_score, _ = metrics.precision_recall_fscore_support(y_eval, pred, average='macro')
 
-    print("\n\nTriple Classification LSTM:")
+    print("\n\nMulti Classification GRU:")
 
     print("Accuracy: {0:.2f}%".format(accuracy * 100))
     print("Precision: {0:.2f}%".format(precision * 100))
