@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn import metrics
 from keras.models import Sequential
-from keras.layers.core import Dense
+from keras.layers.core import Dense, Dropout
 from keras.layers.recurrent import SimpleRNN
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
@@ -18,7 +18,7 @@ OPTIMIZER = Adam(LR)
 LOSS_FUNCTION = 'categorical_crossentropy'
 
 if __name__ == '__main__':
-    file_path = '../Dataset/2class/data1.csv'
+    file_path = '../Dataset/2class/data.csv'
     data = pd.read_csv(file_path)
 
     # exclude inf value from DataFrame
@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
     # Drop NaN value
     data.dropna(inplace=True, axis=1)
+    # data.fillna(value=0, inplace=True)
 
     # Transform Data Frame to Training Data Format
     (x_train, y_train), (x_test, y_test) = load_data(data, label)
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     model = Sequential()
 
     # Using RNN
-    model.add(SimpleRNN(units=CELL_SIZE, input_shape=(1, x_train.shape[2])))
+    model.add(SimpleRNN(units=CELL_SIZE, input_shape=(1, x_train.shape[2]), return_sequences=True))
 
     # Add Output Layer, use Softmax
     model.add(Dense(units=class_number, kernel_initializer='normal', activation='softmax'))
@@ -73,3 +74,5 @@ if __name__ == '__main__':
 
     f_measure = metrics.f1_score(y_eval, pred)
     print("F-Measure: {}".format(f_measure))
+
+    model.save('BinaryRNN.h5')

@@ -73,3 +73,5 @@ if __name__ == '__main__':
 
     f_measure = metrics.f1_score(y_eval, pred)
     print("F-Measure: {}".format(f_measure))
+
+    model.save('BinaryLSTM.h5')
