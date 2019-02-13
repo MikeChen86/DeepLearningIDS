@@ -98,3 +98,7 @@ def load_data(data_frame, label_name, test_size=0.2, random_state=42):
     x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
 
     return (x_train, y_train), (x_test, y_test)
+
+
+if __name__ == '__main__':
+    pass
