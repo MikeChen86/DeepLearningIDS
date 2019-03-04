@@ -3,10 +3,11 @@ import numpy as np
 from sklearn import metrics
 from keras.models import Sequential
 from keras.layers.core import Dense
+from keras.activations import relu, softmax
 from keras.layers.recurrent import SimpleRNN
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
-from DataPreProcessing import exclude_inf, standardizing, load_data
+from DataPreProcessing import exclude_inf, standardizing, load_data, normalizing
 import csv
 import datetime
 
@@ -28,7 +29,6 @@ if __name__ == '__main__':
         for each in range(1, 16):
             file_path = 'Dataset/2class/data{}.csv'.format(each)
             data = pd.read_csv(file_path)
-
             # exclude inf value from DataFrame
             data = exclude_inf(data)
 
@@ -45,12 +45,11 @@ if __name__ == '__main__':
 
             # Building Model
             model = Sequential()
-
             # Using RNN
-            model.add(SimpleRNN(units=CELL_SIZE, input_shape=(1, x_train.shape[2])))
+            model.add(SimpleRNN(units=CELL_SIZE, input_shape=(1, x_train.shape[2]), kernel_initializer='normal'))
 
             # Add Output Layer, use Softmax
-            model.add(Dense(units=class_number, kernel_initializer='normal', activation='softmax'))
+            model.add(Dense(units=class_number, kernel_initializer='normal', activation=softmax))
 
             # Loss function: Cross Entropy
             # Optimizer: Adam
@@ -86,3 +85,4 @@ if __name__ == '__main__':
             score = ['Data{}'.format(each), '{0:.2f}%'.format(accuracy * 100), '{0:.2f}%'.format(precision * 100),
                      '{0:.2f}%'.format(recall * 100), '{0:.4f}'.format(f_measure)]
             writer.writerow(score)
+            exit(0)

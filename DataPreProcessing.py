@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 def exclude_inf(data_frame):
     """
-    Exclude inf value from dataset
+    Exclude infinity, NaN value from dataset
     :param data_frame: Dataset
     :return: Dataset without inf value
     """
@@ -66,6 +66,19 @@ def encode_numeric_zscore(data_frame, name, mean=None, sd=None):
     data_frame[name] = (data_frame[name] - mean) / sd
 
 
+def encode_numeric_normal(data_frame, name):
+    """
+    Encode a numeric column as normalization
+    :param data_frame: Dataset
+    :param name: Header name of column
+    """
+    max_ = data_frame[name].max()
+    min_ = data_frame[name].min()
+    mean_ = data_frame[name].mean()
+
+    data_frame[name] = (data_frame[name] - mean_) / (max_ - min_)
+
+
 def standardizing(data_frame, label_name):
     """
     Standardizing
@@ -79,6 +92,22 @@ def standardizing(data_frame, label_name):
             class_ = encode_text_index(data_frame, label_name)
         else:
             encode_numeric_zscore(data_frame, each)
+    return data_frame, len(class_)
+
+
+def normalizing(data_frame, label_name):
+    """
+        Standardizing
+        :param data_frame: Dataset
+        :param label_name: Header name of label
+        :return: Dataset after Standardizing, number of classes
+        """
+    class_ = None
+    for each in data_frame.keys():
+        if each == label_name:
+            class_ = encode_text_index(data_frame, label_name)
+        else:
+            encode_numeric_normal(data_frame, each)
     return data_frame, len(class_)
 
 
@@ -101,4 +130,15 @@ def load_data(data_frame, label_name, test_size=0.2, random_state=42):
 
 
 if __name__ == '__main__':
-    pass
+    file_path = 'Dataset/3class/data1.csv'
+    data = pd.read_csv(file_path)
+
+    # exclude inf value from DataFrame
+    data = exclude_inf(data)
+
+    # Standardizing
+    label = 'marker'
+    data, class_number = standardizing(data, label)
+
+    # Drop NaN value
+    data.dropna(inplace=True, axis=1)
