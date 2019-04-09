@@ -1,7 +1,7 @@
 from sklearn import preprocessing
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 
 
 def exclude_inf(data_frame):
@@ -111,8 +111,9 @@ def normalizing(data_frame, label_name):
     return data_frame, len(class_)
 
 
-def load_data(data_frame, label_name, test_size=0.2, random_state=42):
+def load_data(data_frame, label_name, random_state=42):
     x, y = to_xy(data_frame, label_name)
+    _, y = np.where(y == 1)
     '''
     y = data[label].values.reshape(data.shape[0], 1)
     data = data.drop(label, 1)
@@ -122,17 +123,32 @@ def load_data(data_frame, label_name, test_size=0.2, random_state=42):
     # x_train.shape=(4156, 1, 117)
     # y_train.shape=(4156, 1)
     '''
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
-    x_train = np.reshape(x_train, (x_train.shape[0], 1, x_train.shape[1]))
-    x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
+    '''
+    data_split = list()
+    for each in range(9):
+        x, x_test, y, y_test = train_test_split(x, y, test_size=1/(10-each), random_state=random_state)
+        x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
+        data_split.append((x_test, y_test))
 
-    return (x_train, y_train), (x_test, y_test)
+    x = np.reshape(x, (x.shape[0], 1, x.shape[1]))
+    data_split.append((x, y))
+    '''
+
+    return x, y
+
+
+def to_sequence(data_frame, time_step=5):
+    number_of_rows = data_frame.shape[0]
+    sequence_data_frame = np.zeros(shape=((number_of_rows - time_step + 1) * time_step, data_frame.shape[1]))
+    for index in range(number_of_rows - time_step + 1):
+        for step, row in enumerate(data_frame[index:(index + time_step)]):
+            sequence_data_frame[index * time_step + step] = row
+    return sequence_data_frame
 
 
 if __name__ == '__main__':
-    file_path = 'Dataset/3class/data1.csv'
+    file_path = 'Dataset/Binaryclass/data2.csv'
     data = pd.read_csv(file_path)
-
     # exclude inf value from DataFrame
     data = exclude_inf(data)
 
@@ -142,3 +158,11 @@ if __name__ == '__main__':
 
     # Drop NaN value
     data.dropna(inplace=True, axis=1)
+    x, y = load_data(data, label)
+    skf = StratifiedKFold(n_splits=10)
+
+    for train_index, test_index in skf.split(x, y):
+
+        print("TRAIN:", train_index, "TEST:", test_index)
+        X_train, X_test = x[train_index], x[test_index]
+        y_train, y_test = y[train_index], y[test_index]

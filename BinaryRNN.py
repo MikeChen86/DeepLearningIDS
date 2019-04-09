@@ -85,4 +85,3 @@ if __name__ == '__main__':
             score = ['Data{}'.format(each), '{0:.2f}%'.format(accuracy * 100), '{0:.2f}%'.format(precision * 100),
                      '{0:.2f}%'.format(recall * 100), '{0:.4f}'.format(f_measure)]
             writer.writerow(score)
-            exit(0)
